@@ -38,6 +38,12 @@ To create a distributed job and add parts, i.e. units of work, to it, simply:
   distributed_job.token # can be used to query the status of the distributed job
 ```
 
+The `part` which is passed to the block is some id for one particular part of
+the distributed job. It must be used in a respective background job to mark
+this part finished after it has been successfully processed. Therefore, when
+all those background jobs have successfully finished, all parts will be marked
+as finished, such that the distributed job will finally be finished as well.
+
 The `token` can be used to keep query the status of the distributed job, e.g.
 on a job summary page or similar. You can show some progress bar in the browser
 or in the terminal, etc:
@@ -48,7 +54,8 @@ distributed_job = Distributed.new(redis: Redis.new, token: params[:token])
 
 distributed_job.total # total number of parts
 distributed_job.count # number of unfinished parts
-distributed_job.finished?
+distributed_job.finished? # whether or not all parts are finished
+distributed_job.open_parts # returns all not yet finished part id's
 ```
 
 Within the background job, you use the passed token and part to query and

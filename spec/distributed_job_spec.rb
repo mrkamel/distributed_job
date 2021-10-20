@@ -39,7 +39,7 @@ RSpec.describe DistributedJob do
       distributed_job.send(:push, 'part1')
       distributed_job.send(:push, 'part2')
 
-      expect(distributed_job.parts.to_set).to eq(%w[part1 part2].to_set)
+      expect(distributed_job.open_parts.to_set).to eq(%w[part1 part2].to_set)
     end
 
     it 'sets an expiry on the keys' do
@@ -54,14 +54,14 @@ RSpec.describe DistributedJob do
     let(:items) { %w[item1 item2 item3] }
 
     it 'pushes each part where the part id is its index' do
-      distributed_job.push_each(items).to_a
+      distributed_job.push_each(items)
 
-      expect(distributed_job.parts.to_set).to eq(%w[0 1 2].to_set)
+      expect(distributed_job.open_parts.to_set).to eq(%w[0 1 2].to_set)
     end
 
     it 'pushes each part before the item is yielded' do
       distributed_job.push_each(items) do |_, part|
-        expect(distributed_job.parts.to_set).to include(part)
+        expect(distributed_job.open_parts.to_set).to include(part)
       end
     end
 
@@ -106,7 +106,7 @@ RSpec.describe DistributedJob do
       distributed_job.send(:push, 'part2')
       distributed_job.done('part1')
 
-      expect(distributed_job.parts.to_a).to eq(['part2'])
+      expect(distributed_job.open_parts.to_set).to eq(['part2'].to_set)
     end
 
     it 'returns true when the last part is done and the job is closed' do

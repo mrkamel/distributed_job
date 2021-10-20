@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    distributed_job (1.0.0)
+    distributed_job (2.0.0)
       redis
 
 GEM
