@@ -88,7 +88,7 @@ class DistributedJob
     enum.each_with_index do |current_object, current_index|
       push(current_index)
 
-      yield(previous_object, previous_index.to_s) if block_given? && previous_index
+      yield(previous_object, previous_index.to_s) if previous_index
 
       previous_object = current_object
       previous_index = current_index
@@ -96,7 +96,7 @@ class DistributedJob
 
     close
 
-    yield(previous_object, previous_index.to_s) if block_given? && previous_index
+    yield(previous_object, previous_index.to_s) if previous_index
   end
 
   # Returns all parts of the distributed job which are not yet finished.
