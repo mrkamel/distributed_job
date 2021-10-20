@@ -54,7 +54,9 @@ RSpec.describe DistributedJob do
     let(:items) { %w[item1 item2 item3] }
 
     it 'pushes each part where the part id is its index' do
-      distributed_job.push_each(items)
+      distributed_job.push_each(items) do
+        # nothing
+      end
 
       expect(distributed_job.open_parts.to_set).to eq(%w[0 1 2].to_set)
     end
