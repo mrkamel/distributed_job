@@ -1,5 +1,8 @@
 # DistributedJob
 
+[![Build](https://github.com/mrkamel/distributed_job/workflows/test/badge.svg)](https://github.com/mrkamel/distributed_job/actions?query=workflow%3Atest+branch%3Amaster)
+[![Gem Version](https://badge.fury.io/rb/distributed_job.svg)](http://badge.fury.io/rb/distributed_job)
+
 Easily keep track of distributed jobs consisting of an arbitrary number of
 parts spanning multiple workers using redis. Can be used with any kind of
 backround job processing queue.
@@ -89,6 +92,11 @@ job in case of errors. Contrary, the `#done` method tells the `DistributedJob` t
 specified part has successfully finished. Finally, the `#finished?` method
 returns true when all parts of the distributed job are finished, which is useful
 to start cleanup jobs or to even start another subsequent distributed job.
+
+## Reference docs
+
+Please find the reference docs at
+[http://www.rubydoc.info/github/mrkamel/distributed_job](http://www.rubydoc.info/github/mrkamel/distributed_job)
 
 ## Development
 
