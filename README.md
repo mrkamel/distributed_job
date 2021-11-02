@@ -106,6 +106,8 @@ method returns true when all parts of the distributed job are finished, which
 is useful to start cleanup jobs or to even start another subsequent distributed
 job.
 
+That's it.
+
 ## Reference docs
 
 Please find the reference docs at
