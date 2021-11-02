@@ -3,6 +3,7 @@
 ## v3.0.0
 
 * Split `DistributedJob` in `DistributedJob::Client` and `DistributedJob::Job`
+* Add native namespace support and drop support for `Redis::Namespace`
 
 ## v2.0.0
 
