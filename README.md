@@ -59,7 +59,7 @@ this part finished after it has been successfully processed. Therefore, when
 all those background jobs have successfully finished, all parts will be marked
 as finished, such that the distributed job will finally be finished as well.
 
-The `token` can be used to keep query the status of the distributed job, e.g.
+The `token` can also be used to query the status of the distributed job, e.g.
 on a job summary page or similar. You can show some progress bar in the browser
 or in the terminal, etc:
 
