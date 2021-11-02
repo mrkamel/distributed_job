@@ -38,7 +38,7 @@ First, create a `DistributedJob::Client`:
 You can specify a `namespace` to be additionally used for redis keys and set a
 `default_ttl` for keys (Default is `86_400`, i.e. one day), which will be used
 every time when keys in redis are updated to guarantee that the distributed
-jobs are cleaned up properly at some point in time.
+job metadata is cleaned up properly from redis at some point in time.
 
 Afterwards, to create a distributed job and add parts, i.e. units of work, to
 it, simply do:
