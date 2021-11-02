@@ -73,8 +73,8 @@ distributed_job.finished? # whether or not all parts are finished
 distributed_job.open_parts # returns all not yet finished part id's
 ```
 
-Within the background job, you use the passed token and part to query and
-update the status of the distributed job and part accordingly. Please note
+Within the background job, you must use the passed `token` and `part` to query
+and update the status of the distributed job and part accordingly. Please note
 that you can use whatever background job processing tool you like most.
 
 ```ruby
