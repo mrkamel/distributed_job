@@ -54,7 +54,7 @@ module DistributedJob
     #
     #   distributed_job = DistributedJob::Job.new(client: DistributedJobClient, token: SecureRandom.hex)
     #
-    #   # or
+    #   # However, the preferred way to build a distributed job is:
     #
     #   distributed_job = DistributedJobClient.build(token: SecureRandom.hex)
 
@@ -123,7 +123,7 @@ module DistributedJob
     # @example
     #   class SomeBackgroundJob
     #     def perform(whatever, token, part)
-    #       distributed_job = DistributedJob.new(redis: Redis.new, token: token)
+    #       distributed_job = DistributedJobClient.build(token: token)
     #
     #       # ...
     #
@@ -184,7 +184,7 @@ module DistributedJob
     # @example
     #   class SomeBackgroundJob
     #     def perform(whatever, token, part)
-    #       distributed_job = DistributedJob.new(redis: Redis.new, token: token)
+    #       distributed_job = DistributedJobClient.build(token: token)
     #
     #       return if distributed_job.stopped?
     #
@@ -216,7 +216,7 @@ module DistributedJob
     # @example
     #   class SomeBackgroundJob
     #     def perform(whatever, token, part)
-    #       distributed_job = DistributedJob.new(redis: Redis.new, token: token)
+    #       distributed_job = DistributedJobClient.build(token: token)
     #
     #       return if distributed_job.stopped?
     #
