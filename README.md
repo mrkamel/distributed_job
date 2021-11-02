@@ -29,10 +29,22 @@ Getting started is very easy. A `DistributedJob` allows to keep track of a
 distributed job, i.e. a job which is split into multiple units running in
 parallel and in multiple workers.
 
-To create a distributed job and add parts, i.e. units of work, to it, simply:
+First, create a `DistributedJob::Client`:
 
 ```ruby
-  distributed_job = DistributedJob.new(redis: Redis.new, token: SecureRandom.hex)
+  DistributedJobClient = DistributedJob::Client.new(redis: Redis.new)
+```
+
+You can specify a `namespace` to be additionally used for redis keys and set a
+`default_ttl` for keys (Default is `86_400`, i.e. one day), which will be used
+every time when keys in redis are updated to guarantee that the distributed
+jobs are cleaned up properly at some point in time.
+
+Afterwards, to create a distributed job and add parts, i.e. units of work, to
+it, simply do:
+
+```ruby
+  distributed_job = DistributedJobClient.build(token: SecureRandom.hex)
 
   distributed_job.push_each(Date.parse('2021-01-01')..Date.today) do |date, part|
     SomeBackgroundJob.perform_async(date, distributed_job.token, part)
@@ -53,7 +65,7 @@ or in the terminal, etc:
 
 ```ruby
 # token is given via URL or via some other means
-distributed_job = Distributed.new(redis: Redis.new, token: params[:token])
+distributed_job = DistributedJobClient.build(token: params[:token])
 
 distributed_job.total # total number of parts
 distributed_job.count # number of unfinished parts
@@ -68,7 +80,7 @@ that you can use whatever background job processing tool you like most.
 ```ruby
 class SomeBackgroundJob
   def perform(whatever, token, part)
-    distributed_job = DistributedJob.new(redis: Redis.new, token: token)
+    distributed_job = DistributedJobClient.build(redis: Redis.new, token: token)
 
     return if distributed_job.stopped?
 
@@ -88,10 +100,11 @@ end
 ```
 
 The `#stop` and `#stopped?` methods can be used to globally stop a distributed
-job in case of errors. Contrary, the `#done` method tells the `DistributedJob` that the
-specified part has successfully finished. Finally, the `#finished?` method
-returns true when all parts of the distributed job are finished, which is useful
-to start cleanup jobs or to even start another subsequent distributed job.
+job in case of errors. Contrary, the `#done` method tells the distributed job
+that the specified part has successfully finished. Finally, the `#finished?`
+method returns true when all parts of the distributed job are finished, which
+is useful to start cleanup jobs or to even start another subsequent distributed
+job.
 
 ## Reference docs
 
