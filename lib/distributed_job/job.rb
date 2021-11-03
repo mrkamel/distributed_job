@@ -24,9 +24,7 @@ module DistributedJob
   #
   #       # ...
   #
-  #       distributed_job.done(part)
-  #
-  #       if distributed_job.finished?
+  #       if distributed_job.done(part)
   #         # perform e.g. cleanup or the some other job
   #       end
   #     rescue

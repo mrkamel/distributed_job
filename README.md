@@ -86,9 +86,7 @@ class SomeBackgroundJob
 
     # ...
 
-    distributed_job.done(part)
-
-    if distributed_job.finished?
+    if distributed_job.done(part)
       # perform e.g. cleanup or the some other job
     end
   rescue
@@ -101,10 +99,9 @@ end
 
 The `#stop` and `#stopped?` methods can be used to globally stop a distributed
 job in case of errors. Contrary, the `#done` method tells the distributed job
-that the specified part has successfully finished. Finally, the `#finished?`
-method returns true when all parts of the distributed job are finished, which
-is useful to start cleanup jobs or to even start another subsequent distributed
-job.
+that the specified part has successfully finished. The `#done` method returns
+true when all parts of the distributed job have finished, which is useful to
+start cleanup jobs or to even start another subsequent distributed job.
 
 That's it.
 
