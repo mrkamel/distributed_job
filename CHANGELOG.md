@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.0.1
+
+* Fix pipelining with regards to redis-rb 4.6.0
+
 ## v3.0.0
 
 * Split `DistributedJob` in `DistributedJob::Client` and `DistributedJob::Job`

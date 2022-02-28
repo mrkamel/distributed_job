@@ -197,11 +197,11 @@ module DistributedJob
     #   end
 
     def stop
-      redis.multi do
-        redis.hset("#{redis_key}:state", 'stopped', 1)
+      redis.multi do |transaction|
+        transaction.hset("#{redis_key}:state", 'stopped', 1)
 
-        redis.expire("#{redis_key}:state", ttl)
-        redis.expire("#{redis_key}:parts", ttl)
+        transaction.expire("#{redis_key}:state", ttl)
+        transaction.expire("#{redis_key}:parts", ttl)
       end
 
       true
@@ -243,11 +243,11 @@ module DistributedJob
     end
 
     def close
-      redis.multi do
-        redis.hset("#{redis_key}:state", 'closed', 1)
+      redis.multi do |transaction|
+        transaction.hset("#{redis_key}:state", 'closed', 1)
 
-        redis.expire("#{redis_key}:state", ttl)
-        redis.expire("#{redis_key}:parts", ttl)
+        transaction.expire("#{redis_key}:state", ttl)
+        transaction.expire("#{redis_key}:parts", ttl)
       end
 
       true
