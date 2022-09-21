@@ -66,7 +66,7 @@ module DistributedJob
 
       it 'pushes each part before the item is yielded' do
         job.push_each(items) do |_, part|
-          expect(job.open_parts.to_set).to include(part)
+          expect(job.open_part?(part)).to eq(true)
         end
       end
 
@@ -83,6 +83,46 @@ module DistributedJob
       it 'closes the job right before the last element is yielded' do
         job.push_each(items) do |item, _|
           if item == items.last
+            expect(job.send(:closed?)).to eq(true)
+          else
+            expect(job.send(:closed?)).to eq(false)
+          end
+        end
+      end
+    end
+
+    describe '#push_in_batches' do
+      let(:items) { %w[item1 item2 item3] }
+
+      it 'pushes the parts in batches with the part id being the index' do
+        job.push_in_batches(items, batch_size: 2) do
+          # nothing
+        end
+
+        expect(job.open_parts.to_set).to eq(%w[0 1 2].to_set)
+      end
+
+      it 'pushes each part before the batch is yielded' do
+        job.push_in_batches(items, batch_size: 2) do |_, parts|
+          parts.each do |part|
+            expect(job.open_part?(part)).to eq(true)
+          end
+        end
+      end
+
+      it 'yields batches of the correct size and each item with its part id' do
+        batches = []
+
+        job.push_in_batches(items, batch_size: 2) do |objects, parts|
+          batches << [objects, parts]
+        end
+
+        expect(batches).to eq([[%w[item1 item2], %w[0 1]], [%w[item3], %w[2]]])
+      end
+
+      it 'closes the job right before the last batch is yielded' do
+        job.push_in_batches(items, batch_size: 2) do |objects, _|
+          if objects.include?(items.last)
             expect(job.send(:closed?)).to eq(true)
           else
             expect(job.send(:closed?)).to eq(false)
@@ -145,6 +185,34 @@ module DistributedJob
 
         expect(state_ttl.between?(0, 100)).to eq(true)
         expect(parts_ttl.between?(0, 100)).to eq(true)
+      end
+    end
+
+    describe '#open_part?' do
+      it 'returns true when the part is marked done and false when not' do
+        job.send(:push, 'part1')
+        job.send(:push, 'part2')
+
+        expect(job.open_part?('part1')).to eq(true)
+        expect(job.open_part?('part2')).to eq(true)
+
+        job.done('part1')
+
+        expect(job.open_part?('part1')).to eq(false)
+        expect(job.open_part?('part2')).to eq(true)
+      end
+    end
+
+    describe '#open_parts' do
+      it 'returns the open parts' do
+        job.send(:push, 'part1')
+        job.send(:push, 'part2')
+
+        expect(job.open_parts.to_set).to eq(%w[part1 part2].to_set)
+
+        job.done('part1')
+
+        expect(job.open_parts.to_set).to eq(['part2'].to_set)
       end
     end
 
