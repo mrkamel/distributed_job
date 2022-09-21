@@ -53,6 +53,57 @@ module DistributedJob
       end
     end
 
+    describe '#push_all' do
+      it 'increments the count' do
+        expect(job.count).to eq(0)
+        job.push_all(%w[part1 part2 part3])
+        expect(job.count).to eq(3)
+      end
+
+      it 'does not increment count for duplicate items' do
+        expect(job.count).to eq(0)
+        job.push_all(%w[part1 part2 part2 part3])
+        expect(job.count).to eq(3)
+      end
+
+      it 'increments total' do
+        expect(job.total).to eq(0)
+        job.push_all(%w[part1 part2 part3])
+        expect(job.total).to eq(3)
+      end
+
+      it 'does not increment total for duplicate items' do
+        expect(job.total).to eq(0)
+        job.push_all(%w[part1 part2 part2 part3])
+        expect(job.total).to eq(3)
+      end
+
+      it 'adds the parts' do
+        job.push_all(%w[part1 part2 part3])
+
+        expect(job.open_parts.to_set).to eq(%w[part1 part2 part3].to_set)
+      end
+
+      it 'sets an expiry on the keys' do
+        job.push_all(%w[part1 part2 part3])
+
+        expect(state_ttl.between?(0, 100)).to eq(true)
+        expect(parts_ttl.between?(0, 100)).to eq(true)
+      end
+
+      it 'closes the job' do
+        job.push_all(%w[part1 part2])
+
+        expect(job.send(:closed?)).to eq(true)
+      end
+
+      it 'raises an AlreadyClosed error when the job is already closed' do
+        job.send(:close)
+
+        expect { job.push_all(%w[part1 part2]) }.to raise_error(AlreadyClosed)
+      end
+    end
+
     describe '#push_each' do
       let(:items) { %w[item1 item2 item3] }
 
@@ -88,6 +139,16 @@ module DistributedJob
             expect(job.send(:closed?)).to eq(false)
           end
         end
+      end
+
+      it 'raises an AlreadyClosed error when the job is already closed' do
+        job.send(:close)
+
+        expect do
+          job.push_each(%w[part1 part2]) do
+            # nothing
+          end
+        end.to raise_error(AlreadyClosed)
       end
     end
 

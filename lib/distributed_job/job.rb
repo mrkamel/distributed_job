@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module DistributedJob
+  class AlreadyClosed < StandardError; end
+
   # A `DistributedJob::Job` instance allows to keep track of a distributed job, i.e.
   # a job which is split into multiple units running in parallel and in multiple
   # workers using redis.
@@ -85,6 +87,8 @@ module DistributedJob
     #   end
 
     def push_each(enum)
+      raise(AlreadyClosed, 'The distributed job is already closed') if closed?
+
       previous_object = nil
       previous_index = nil
 
@@ -100,6 +104,35 @@ module DistributedJob
       close
 
       yield(previous_object, previous_index.to_s) if previous_index
+    end
+
+    # Pass an enum to be used to iterate all the units of work of the
+    # distributed job. The values of the enum are used for the names of the
+    # parts, such that values listed multiple times (duplicates) will only be
+    # added once to the distributed job. The distributed job needs to know all
+    # of them to keep track of the overall number and status of the parts.
+    # Passing an enum is much better compared to pushing the parts manually,
+    # because the distributed job needs to be closed before the last part of
+    # the distributed job is enqueued into some job queue. Otherwise it could
+    # potentially happen that the last part is already processed in the job
+    # queue before it is pushed to redis, such that the last job doesn't know
+    # that the distributed job is finished.
+    #
+    # @param enum [#each] The enum which can be iterated to get all
+    #   job parts
+    #
+    # @example
+    #   distributed_job.push_all(0..128)
+    #   distributed_job.push(['part1', 'part2', 'part3'])
+
+    def push_all(enum)
+      raise(AlreadyClosed, 'The distributed job is already closed') if closed?
+
+      enum.each do |part|
+        push(part)
+      end
+
+      close
     end
 
     # Returns all parts of the distributed job which are not yet finished.
