@@ -121,7 +121,7 @@ module DistributedJob
       end
 
       it 'closes the job right before the last batch is yielded' do
-        job.push_in_batches(items, batch_size: 2) do |objects, parts|
+        job.push_in_batches(items, batch_size: 2) do |objects, _|
           if objects.include?(items.last)
             expect(job.send(:closed?)).to eq(true)
           else
