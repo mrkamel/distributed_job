@@ -143,6 +143,15 @@ module DistributedJob
       redis.sscan_each("#{redis_key}:parts")
     end
 
+    # Returns whether or not the part is in the list of open parts of the
+    # distributed job.
+    #
+    # @return [Boolean] Returns true or false
+
+    def open_part?(part)
+      redis.sismember("#{redis_key}:parts", part.to_s)
+    end
+
     # Removes the specified part from the distributed job, i.e. from the set of
     # unfinished parts. Use this method when the respective job part has been
     # successfully processed, i.e. finished.

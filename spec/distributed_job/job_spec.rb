@@ -209,6 +209,34 @@ module DistributedJob
       end
     end
 
+    describe '#open_part?' do
+      it 'returns true when the part is marked done and false when not' do
+        job.send(:push, 'part1')
+        job.send(:push, 'part2')
+
+        expect(job.open_part?('part1')).to eq(true)
+        expect(job.open_part?('part2')).to eq(true)
+
+        job.done('part1')
+
+        expect(job.open_part?('part1')).to eq(false)
+        expect(job.open_part?('part2')).to eq(true)
+      end
+    end
+
+    describe '#open_parts' do
+      it 'returns the open parts' do
+        job.send(:push, 'part1')
+        job.send(:push, 'part2')
+
+        expect(job.open_parts.to_set).to eq(%w[part1 part2].to_set)
+
+        job.done('part1')
+
+        expect(job.open_parts.to_set).to eq(['part2'].to_set)
+      end
+    end
+
     describe '#stop' do
       it 'marks the job as stopped' do
         expect(job.stopped?).to eq(false)
