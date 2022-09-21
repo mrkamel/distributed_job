@@ -85,21 +85,46 @@ module DistributedJob
     #   end
 
     def push_each(enum)
-      previous_object = nil
-      previous_index = nil
+      push_in_batches(enum, batch_size: 1) do |batch|
+        yield(batch[0][0], batch[0][1])
+      end
+    end
 
-      enum.each_with_index do |current_object, current_index|
-        push(current_index)
+    # Pass an enum to be used to iterate all the units of work of the
+    # distributed job in batches. This is e.g. useful when you want one
+    # background job to process multiple parts of a distributed job. The
+    # distributed job needs to know all of them to keep track of the overall
+    # number and status of the parts. Passing an enum is much better compared
+    # to pushing the parts manually, because the distributed job needs to be
+    # closed before the last part of the distributed job is enqueued into some
+    # job queue. Otherwise it could potentially happen that the last part is
+    # already processed in the job queue before it is pushed to redis, such
+    # that the last job doesn't know that the distributed job is finished.
+    #
+    # @param enum [#each_with_index] The enum which can be iterated to get all
+    #   job parts
+    #
+    # @example
+    #   distributed_job.push_in_batches(Date.parse('2021-01-01')..Date.today, batch_size: 10) do |batch|
+    #     # e.g. SomeBackgroundJob.perform_async(distributed_job.token, dates: batch.map(&:first), parts: batch.mp(&:last))
+    #   end
 
-        yield(previous_object, previous_index.to_s) if previous_index
+    def push_in_batches(enum, batch_size:)
+      previous_batch = nil
 
-        previous_object = current_object
-        previous_index = current_index
+      enum.each_with_index.each_slice(batch_size) do |current_batch|
+        current_batch.each do |_, current_index|
+          push(current_index)
+        end
+
+        yield(previous_batch.map { |(object, index)| [object, index.to_s] }) if previous_batch
+
+        previous_batch = current_batch
       end
 
       close
 
-      yield(previous_object, previous_index.to_s) if previous_index
+      yield(previous_batch.map { |object, index| [object, index.to_s] }) if previous_batch
     end
 
     # Returns all parts of the distributed job which are not yet finished.
@@ -108,6 +133,15 @@ module DistributedJob
 
     def open_parts
       redis.sscan_each("#{redis_key}:parts")
+    end
+
+    # Returns whether or not the part is in the list of open parts of the
+    # distributed job.
+    #
+    # @return [Boolean] Returns true or false
+
+    def open_part?(part)
+      redis.sismember("#{redis_key}:parts", part)
     end
 
     # Removes the specified part from the distributed job, i.e. from the set of

@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v3.1.0
+
+* Added `DistributedJob::Job#push_in_batches` to make it easier when you want
+  one background job to process multiple parts of a distributed job
+* Added `DistributedJob::Job#open_part?` to determine whether or not a part
+  is still open
+
 ## v3.0.1
 
 * Fix pipelining with regards to redis-rb 4.6.0
