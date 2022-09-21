@@ -208,7 +208,7 @@ module DistributedJob
         job.send(:push, 'part1')
         job.send(:push, 'part2')
 
-        expect(job.open_parts.to_set).to eq(['part1', 'part2'].to_set)
+        expect(job.open_parts.to_set).to eq(%w[part1 part2].to_set)
 
         job.done('part1')
 
