@@ -85,8 +85,8 @@ module DistributedJob
     #   end
 
     def push_each(enum)
-      push_in_batches(enum, batch_size: 1) do |batch|
-        yield(batch[0][0], batch[0][1])
+      push_in_batches(enum, batch_size: 1) do |objects, parts|
+        yield(objects[0], parts[0])
       end
     end
 
@@ -105,8 +105,8 @@ module DistributedJob
     #   job parts
     #
     # @example
-    #   distributed_job.push_in_batches(Date.parse('2021-01-01')..Date.today, batch_size: 10) do |batch|
-    #     # e.g. SomeBackgroundJob.perform_async(distributed_job.token, dates: batch.map(&:first), parts: batch.mp(&:last))
+    #   distributed_job.push_in_batches(Date.parse('2021-01-01')..Date.today, batch_size: 10) do |dates, parts|
+    #     # e.g. SomeBackgroundJob.perform_async(distributed_job.token, dates: dates, parts: parts)
     #   end
 
     def push_in_batches(enum, batch_size:)
@@ -117,14 +117,14 @@ module DistributedJob
           push(current_index)
         end
 
-        yield(previous_batch.map { |(object, index)| [object, index.to_s] }) if previous_batch
+        yield(previous_batch.map(&:first), previous_batch.map(&:last).map(&:to_s)) if previous_batch
 
         previous_batch = current_batch
       end
 
       close
 
-      yield(previous_batch.map { |object, index| [object, index.to_s] }) if previous_batch
+      yield(previous_batch.map(&:first), previous_batch.map(&:last).map(&:to_s)) if previous_batch
     end
 
     # Returns all parts of the distributed job which are not yet finished.

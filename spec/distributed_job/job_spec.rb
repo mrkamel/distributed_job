@@ -103,8 +103,8 @@ module DistributedJob
       end
 
       it 'pushes each part before the batch is yielded' do
-        job.push_in_batches(items, batch_size: 2) do |batch|
-          batch.map(&:last).each do |part|
+        job.push_in_batches(items, batch_size: 2) do |_, parts|
+          parts.each do |part|
             expect(job.open_part?(part)).to eq(true)
           end
         end
@@ -113,16 +113,16 @@ module DistributedJob
       it 'yields batches of the correct size and each item with its part id' do
         batches = []
 
-        job.push_in_batches(items, batch_size: 2) do |batch|
-          batches << batch
+        job.push_in_batches(items, batch_size: 2) do |objects, parts|
+          batches << [objects, parts]
         end
 
-        expect(batches).to eq([[%w[item1 0], %w[item2 1]], [%w[item3 2]]])
+        expect(batches).to eq([[%w[item1 item2], %w[0 1]], [%w[item3], %w[2]]])
       end
 
       it 'closes the job right before the last batch is yielded' do
-        job.push_in_batches(items, batch_size: 2) do |batch|
-          if batch.map(&:first).include?(items.last)
+        job.push_in_batches(items, batch_size: 2) do |objects, parts|
+          if objects.include?(items.last)
             expect(job.send(:closed?)).to eq(true)
           else
             expect(job.send(:closed?)).to eq(false)
