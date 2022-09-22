@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v3.1.0
+
+* Added `DistributedJob::Job#push_all`
+* Added `DistributedJob::Job#open_part?`
+
 ## v3.0.1
 
 * Fix pipelining with regards to redis-rb 4.6.0
